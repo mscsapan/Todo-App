@@ -23,6 +23,7 @@ class InputView extends StatelessWidget {
         ),
         TextField(
           controller: descriptionController,
+          maxLines: 3,
           decoration: const InputDecoration(
               border: UnderlineInputBorder(
                   borderSide: BorderSide(color: Colors.grey)),

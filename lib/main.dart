@@ -7,9 +7,9 @@ import 'screens/home.dart';
 void main() => runApp(
       MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: ChangeNotifierProvider(
-          create: (BuildContext context) => StateController(),
-          child: Home(),
+        home: ChangeNotifierProvider<StateController>(
+          create: (_) => StateController(),
+          child: const Home(),
         ),
       ),
     );

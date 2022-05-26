@@ -1,8 +1,8 @@
 class TodoModel {
   final int? id;
-  final String? title;
-  final String? description;
-  final DateTime? time;
+  final String title;
+  final String description;
+  final DateTime time;
 
   TodoModel({
     this.id,
@@ -22,7 +22,7 @@ class TodoModel {
       'id': id,
       'title': title,
       'description': description,
-      'time': time,
+      'time': time.toString(),
     };
   }
 }

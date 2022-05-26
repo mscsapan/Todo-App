@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:sqflite/sqflite.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
@@ -10,8 +12,8 @@ class DatabaseController {
       DatabaseController._dataController();
   static Database? _database;
   static const _databaseName = 'todo.db';
-  static const _tableName = 'todoTable';
-  static const int _version = 1;
+  static const _tableName = 'todo';
+  static const int _version = 4;
 
   Future<Database?> get myDatabase async {
     if (_database != null) return _database;
@@ -19,12 +21,12 @@ class DatabaseController {
   }
 
   _initializingDatabase() async {
-    var directory = await getApplicationDocumentsDirectory();
+    Directory directory = await getApplicationDocumentsDirectory();
     String path = join(directory.path, _databaseName);
     return await openDatabase(path, version: _version, onCreate: _onCreate);
   }
 
-  _onCreate(Database? database, int version) async {
+  Future<void> _onCreate(Database? database, int version) async {
     await database!.execute('''
     CREATE TABLE $_tableName(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,25 +39,35 @@ class DatabaseController {
 
   Future<TodoModel> insertTodo(TodoModel todoModel) async {
     print('${todoModel.toTodoMap()} INSERTED Successfully');
-    Database? db = await myDatabase;
-    await db!.insert(_tableName, todoModel.toTodoMap());
+    Database? db = await databaseController.myDatabase;
+    await db!.insert(_tableName, todoModel.toTodoMap(),
+        conflictAlgorithm: ConflictAlgorithm.replace);
     return todoModel;
   }
 
   Future<List<TodoModel>> getAllTodo() async {
-    Database? db = await myDatabase;
+    Database? db = await databaseController.myDatabase;
     List<Map<String, dynamic>> result = await db!.query(_tableName);
-    return result.map((todo) => TodoModel.fromTodo(todo)).toList();
+    return List.generate(
+      result.length,
+      (i) => TodoModel(
+        id: result[i]['id'],
+        title: result[i]['title'],
+        description: result[i]['description'],
+        time: DateTime.parse(result[i]['time']),
+      ),
+    );
+    // return result.map((todo) => TodoModel.fromTodo(todo)).toList();
   }
 
-  Future<int> deleteTodo(int id) async {
-    Database? db = await myDatabase;
-    return await db!.delete(_tableName, where: 'id ==?', whereArgs: [id]);
+  Future deleteTodo(int id) async {
+    Database? db = await databaseController.myDatabase;
+    return await db!.delete(_tableName, where: 'id = ?', whereArgs: [id]);
   }
 
-  updateTodo(TodoModel todoModel) async {
-    Database? db = await myDatabase;
+  Future updateTodo(TodoModel todoModel) async {
+    Database? db = await databaseController.myDatabase;
     return db!.update(_tableName, todoModel.toTodoMap(),
-        where: 'id == ?', whereArgs: [todoModel.id]);
+        where: 'id = ?', whereArgs: [todoModel.id]);
   }
 }
